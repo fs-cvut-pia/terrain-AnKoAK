@@ -22,11 +22,12 @@ public:
         std::make_pair(0, -1),      // One row above, one same column.
         std::make_pair(1, -1),      // One row above, one column right.
         std::make_pair(-1, 0),      // Same row, one column left.
-        std::make_pair(1, 0),       // Same row, one column left.
+        std::make_pair(1, 0),       // Same row, one column left
         std::make_pair(-1, 1),      // One row below, one column left.
         std::make_pair(0, 1),       // One row below, one same column.
         std::make_pair(1, 1),       // One row below, one column right.
     };
+ 
 
 protected:
     TerrainMap& map;

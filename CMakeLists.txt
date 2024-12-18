@@ -9,4 +9,5 @@ add_executable(
     TerrainMap.cpp 
     Path.cpp 
     NavyPath.cpp 
+    RoadPath.cpp
 )

@@ -1,6 +1,7 @@
 #include "TerrainMap.h"
 #include "Path.h"
 #include "NavyPath.h"
+#include "RoadPath.h"
 #include <vector>
 #include <iostream>
 #include <string>
@@ -41,6 +42,7 @@ int main(int argc, char *argv[]) {
     std::vector<Path*> paths = { //new YourPath(m,"MyPathName",start,finish), ...
         // Here add the list of dynamically created classes with path finding algorithms
         new NavyPath(m, "../OceanPath", start, finish),
+        new RoadPath(m, "../RoadPath", start, finish),
     };
 
 
