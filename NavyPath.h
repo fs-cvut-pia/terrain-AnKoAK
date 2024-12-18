@@ -14,33 +14,30 @@ class NavyPath : public Path
 public: 
     NavyPath(TerrainMap& m, std::string name_in, Point start_in, Point finish_in);
     bool find() override;
-    void printStats() const;     // Print out path statistics
-    void saveToFile() const;     // Save path to file "name.dat"
-    std::string getName() const; // Returns path name
+    /** Check if given point is sea. */
+    bool isSea(Point point) const;
 
 protected:
-    /** Check if given point is sea. */
-    bool isSea(const Point * point) const;
     /** Check if the point has been inspected. */
-    bool wasInspected (const Point * point);
+    bool wasInspected (Point point);
     /** Check if the point is in the queue already. */
-    bool isInQueue(const Point * point);
+    bool isInQueue(Point point);
     /** Inspect other points around the given point
     and add them to the queue
      */
-    void inspectSurroundings (Point * point);
+    void inspectSurroundings (Point point);
     /** Delte address of point if inspected. */
-    void deleteFromQueuePoints (const Point * point);
+    void deleteFromQueuePoints (Point point);
     /** Get the length of the path. */
-    int getPathLength(const Point * point);
+    int getPathLength(Point point);
     /** Set new shortest path from the point to the beginning. */
-    void setPath(const Point * point);
+    void setPath(Point point);
 
     /** Matrix representing inspected points. */
     Matrix<int> inspectedPoints;
     /** Matrix representing addresses points is in the queue. */
-    std::vector<Point *> queuePoints;
-    std::queue<Point *> pointsToInspect;
+    std::vector<Point> queuePoints;
+    std::queue<Point> pointsToInspect;
     /** Length of the shortest path. */
     int m_pathLength;
     

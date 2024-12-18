@@ -2,22 +2,7 @@
 
 #include <iostream>
 #include <algorithm>
-#include <array>
 #include <climits>
-
-
-/** Possible directions of movement. */
-std::array < std::pair<int, int>, 8> directions = {
-    std::make_pair(-1, -1),     // One row above, one column left.
-    std::make_pair(0, -1),      // One row above, one same column.
-    std::make_pair(1, -1),      // One row above, one column right.
-    std::make_pair(-1, 0),      // Same row, one column left.
-    std::make_pair(1, 0),       // Same row, one column left.
-    std::make_pair(-1, 1),      // One row below, one column left.
-    std::make_pair(0, 1),       // One row below, one same column.
-    std::make_pair(1, 1),       // One row below, one column right.
-};
-
 
 NavyPath::NavyPath(TerrainMap& m, std::string name_in, Point start_in, Point finish_in)
 : Path{m, name_in, start_in, finish_in }
@@ -26,23 +11,25 @@ NavyPath::NavyPath(TerrainMap& m, std::string name_in, Point start_in, Point fin
 {
     
     inspectedPoints.zero();
-    pointsToInspect.push(&start_in);   
+    pointsToInspect.push(start_in);  
+    queuePoints.push_back(start_in); 
 }
 
 bool NavyPath::find()
 {
     while (!pointsToInspect.empty())
     {
-        Point * inspectedPoint = pointsToInspect.front();
+        Point inspectedPoint = pointsToInspect.front();
+        std::cout << "(" << inspectedPoint.x << "," << inspectedPoint.y << ")" << std::endl;
         inspectSurroundings(inspectedPoint);
         pointsToInspect.pop();
         // Delete address from currently inspected points.
         deleteFromQueuePoints(inspectedPoint);
         // Select point as inspected.
-        inspectedPoints(*inspectedPoint) = 1;
+        inspectedPoints(inspectedPoint) = 1;
 
         // Check for target.
-        if (inspectedPoint == &finish)
+        if (inspectedPoint == finish)
         {
             int pathLength = getPathLength(inspectedPoint);
 
@@ -57,55 +44,57 @@ bool NavyPath::find()
 
     // If m_pathLength has changed from inintialization, 
     // at least once the target was hit.
-    if (m_pathLength != INT_MAX)
+    std::cout << m_pathLength << std::endl;
+    if (m_pathLength != LLONG_MAX)
     {
         return true;
     }
     return false;
 }
 
-void NavyPath::setPath(const Point * point)
+void NavyPath::setPath(Point point)
 {
-    while ( point != nullptr)
+    Point * pointP = &point;
+    while ( pointP != nullptr)
     {
-        path.push_back(*point);
-        point = point->predecessor;
+        path.push_back(*pointP);
+        pointP = pointP->predecessor;
     }
 }
 
-int NavyPath::getPathLength(const Point * point)
+int NavyPath::getPathLength(Point point)
 {
     int pathLength = 0;
-    Point * actualPoint = const_cast<Point *>(point);
+    Point * actualPoint = &point;
     while (actualPoint != nullptr) {
         pathLength++;
         actualPoint = actualPoint->predecessor;
     }
 
     std::cout << "Path length from point (" 
-    << point->x << ", " << point->y << "): "
+    << point.x << ", " << point.y << "): "
     << pathLength << std::endl;
     return pathLength;
 }
 
-bool NavyPath::isSea(const Point * point) const
+bool NavyPath::isSea(Point point) const
 {
-    return map.alt(* point) < 0;
+    return map.alt(point) < 0;
 }
 
-bool NavyPath::wasInspected(const Point * point)
+bool NavyPath::wasInspected(Point point)
 {
-    return inspectedPoints(*point);
+    return inspectedPoints(point);
 }
 
-bool NavyPath::isInQueue(const Point * point)
+bool NavyPath::isInQueue(Point point)
 {
     auto it = std::find(queuePoints.begin(), queuePoints.end(), point);
 
     return it != queuePoints.end() ? true : false;
 }
 
-void NavyPath::deleteFromQueuePoints(const Point * point)
+void NavyPath::deleteFromQueuePoints(Point point)
 {
     auto it = std::find(queuePoints.begin(), queuePoints.end(), point);
 
@@ -114,22 +103,23 @@ void NavyPath::deleteFromQueuePoints(const Point * point)
     queuePoints.erase(queuePoints.begin() + position);
 }
 
-void NavyPath::inspectSurroundings(Point * point)
+void NavyPath::inspectSurroundings(Point point)
 {
     // Inspect all points in the circle.
     for (auto direction : directions) 
     {
-        Point neighbourPoint = Point(point->x + direction.first, point->y + direction.second);
+        Point neighbourPoint = Point(point.x + direction.first, point.y + direction.second);
 
         // Check if the coords are valid / inside the map and within altitude condition.
-        if (map.validCoords(neighbourPoint) && isSea(&neighbourPoint))
+        if (map.validCoords(neighbourPoint) && isSea(neighbourPoint))
         {
             // Check if the point is already to be inspect or was inspected.
-            if (!(isInQueue(&neighbourPoint) || wasInspected(& neighbourPoint)) )
+            if (!(isInQueue(neighbourPoint) || wasInspected(neighbourPoint)) )
             {
-                pointsToInspect.push(&neighbourPoint);
-                queuePoints.push_back(&neighbourPoint);
-                neighbourPoint.predecessor = point;
+                pointsToInspect.push(neighbourPoint);
+                queuePoints.push_back(neighbourPoint);
+                neighbourPoint.predecessor = &point;
+
             }
         }
     }
