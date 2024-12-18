@@ -1,9 +1,15 @@
 #include "Path.h"
 #include <cmath>
 #include <fstream>
-#include <iostream>
 
-Path::Path(TerrainMap& m, std::string name_in, Point start_in, Point finish_in) : map(m), name(name_in), start(start_in), finish(finish_in) {};
+
+
+Path::Path(TerrainMap& m, std::string name_in, Point start_in, Point finish_in) 
+: map(m)
+, name(name_in)
+, start(start_in)
+, finish(finish_in) 
+{};
 
 void Path::printStats() const {
     bool land = false;
@@ -56,3 +62,5 @@ void Path::saveToFile() const {
         output << u.x << " " << u.y << std::endl;
     }
 }
+
+
