@@ -12,6 +12,7 @@ struct Point {
     Point(int i, int j) : x(i), y(j) {};
     int x;
     int y;
+    Point * predecessor = nullptr;
     constexpr static int nx_max = 10000;
     Point& operator= (double a) { x = a; y = a; return *this; };
     bool operator!= (Point const& v) const { return !(operator== (v)); };
