@@ -7,30 +7,38 @@
 NavyPath::NavyPath(TerrainMap& m, std::string name_in, Point start_in, Point finish_in)
 : Path{m, name_in, start_in, finish_in }
 , inspectedPoints{m.nx, m.ny}
+, waitingPoints{m.nx, m.ny}
+, predecessors{m.nx, m.ny}
 , m_pathLength {INT_MAX}  // Set initial length to inifinity.
 {
     
     inspectedPoints.zero();
-    pointsToInspect.push(start_in);  
-    queuePoints.push_back(start_in); 
+    waitingPoints.zero();
+    pointsToInspect.push(start);  
+    waitingPoints(start) = 1; 
+    Point inspectedPoint = pointsToInspect.front();
+    std::cout << "Queue (" << inspectedPoint.x << "," << inspectedPoint.y << ")" << std::endl;
+
 }
 
 bool NavyPath::find()
 {
+    Point inspectedPoint = pointsToInspect.front();
+    std::cout << "Start " << start.x << ", " << start.y << std::endl;
+    
     while (!pointsToInspect.empty())
     {
         Point inspectedPoint = pointsToInspect.front();
         std::cout << "(" << inspectedPoint.x << "," << inspectedPoint.y << ")" << std::endl;
         inspectSurroundings(inspectedPoint);
         pointsToInspect.pop();
-        // Delete address from currently inspected points.
-        deleteFromQueuePoints(inspectedPoint);
         // Select point as inspected.
         inspectedPoints(inspectedPoint) = 1;
 
         // Check for target.
         if (inspectedPoint == finish)
         {
+            std::cout << "Target hit" << std::endl;
             int pathLength = getPathLength(inspectedPoint);
 
             // Check and possibly set new shortest path.
@@ -54,21 +62,21 @@ bool NavyPath::find()
 
 void NavyPath::setPath(Point point)
 {
-    Point * pointP = &point;
-    while ( pointP != nullptr)
+    while ( point != start)
     {
-        path.push_back(*pointP);
-        pointP = pointP->predecessor;
+        path.push_back(point);
+        point = predecessors(point);
     }
 }
 
 int NavyPath::getPathLength(Point point)
 {
     int pathLength = 0;
-    Point * actualPoint = &point;
-    while (actualPoint != nullptr) {
+    
+    while ( point != start)
+    {
         pathLength++;
-        actualPoint = actualPoint->predecessor;
+        point = predecessors(point);
     }
 
     std::cout << "Path length from point (" 
@@ -89,18 +97,12 @@ bool NavyPath::wasInspected(Point point)
 
 bool NavyPath::isInQueue(Point point)
 {
-    auto it = std::find(queuePoints.begin(), queuePoints.end(), point);
-
-    return it != queuePoints.end() ? true : false;
+    return waitingPoints(point);
 }
 
 void NavyPath::deleteFromQueuePoints(Point point)
 {
-    auto it = std::find(queuePoints.begin(), queuePoints.end(), point);
-
-    int position = std::distance(queuePoints.begin(), it);
-    
-    queuePoints.erase(queuePoints.begin() + position);
+    // Delete.
 }
 
 void NavyPath::inspectSurroundings(Point point)
@@ -111,14 +113,16 @@ void NavyPath::inspectSurroundings(Point point)
         Point neighbourPoint = Point(point.x + direction.first, point.y + direction.second);
 
         // Check if the coords are valid / inside the map and within altitude condition.
-        if (map.validCoords(neighbourPoint) && isSea(neighbourPoint))
+        if (map.validCoords(neighbourPoint) && (isSea(neighbourPoint) || neighbourPoint == finish) )
         {
             // Check if the point is already to be inspect or was inspected.
-            if (!(isInQueue(neighbourPoint) || wasInspected(neighbourPoint)) )
+            if (!(isInQueue(neighbourPoint) || wasInspected(neighbourPoint) ) )
             {
                 pointsToInspect.push(neighbourPoint);
-                queuePoints.push_back(neighbourPoint);
-                neighbourPoint.predecessor = &point;
+                // Set predecessor of the waiting point.
+                predecessors(neighbourPoint) = point;
+                // Set point as waiting in queue.
+                waitingPoints(neighbourPoint) = 1;
 
             }
         }

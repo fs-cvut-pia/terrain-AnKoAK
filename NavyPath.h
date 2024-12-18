@@ -35,6 +35,8 @@ protected:
 
     /** Matrix representing inspected points. */
     Matrix<int> inspectedPoints;
+    Matrix<int> waitingPoints;
+    Matrix<Point> predecessors;
     /** Matrix representing addresses points is in the queue. */
     std::vector<Point> queuePoints;
     std::queue<Point> pointsToInspect;

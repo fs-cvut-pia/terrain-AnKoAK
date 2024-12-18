@@ -1,5 +1,6 @@
 #include "TerrainMap.h"
 #include "Path.h"
+#include "NavyPath.h"
 #include <vector>
 #include <iostream>
 #include <string>
@@ -25,17 +26,23 @@ int main(int argc, char *argv[]) {
 
     if (argc > 1) terrain_filename = argv[1];
     else { std::cout << "No terrain file specified!" << std::endl; return 0; }
-
+    //terrain_filename = "../terrain.dat";
+    
     TerrainMap m(nx,ny,terrain_filename);
 
     // Load the coordinates of the start and end points
 
-    Point start = read_coordinates(argc,argv,2);
-    Point finish = read_coordinates(argc,argv,4);
+    Point main = read_coordinates(argc,argv,2);
+    Point start = Point(198, 205);
+    Point mfinish = read_coordinates(argc,argv,4);
+    Point finish = Point(78, 17);
+
 
     std::vector<Path*> paths = { //new YourPath(m,"MyPathName",start,finish), ...
         // Here add the list of dynamically created classes with path finding algorithms
+        new NavyPath(m, "../OceanPath", start, finish),
     };
+
 
     for (auto& p : paths) {
         std::cout << "Path search: " << p->getName() << std::endl;
